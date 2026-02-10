@@ -23,11 +23,10 @@
     margin-bottom: 20px;
   }
 
-  /* ⭐ 항상 공간 확보 (위치 고정 핵심) */
   #kr {
     font-size: 60px;
     color: orange;
-    height: 70px; /* ← 공간 미리 확보 */
+    height: 70px;
   }
 
   button {
@@ -36,18 +35,26 @@
     border-radius: 10px;
     border: none;
     cursor: pointer;
+    margin: 5px;
+  }
+
+  #menu button {
+    background: #222;
+    color: white;
   }
 </style>
 </head>
 
 <body>
 <div id="app">
+  <div id="menu"></div>
   <div id="jp"></div>
   <div id="kr"></div>
 </div>
 
 <script>
-const chars = [
+// ------------------ 그룹별 배열 ------------------
+const normal = [
   ["あ","아"],["い","이"],["う","우"],["え","에"],["お","오"],
   ["か","카"],["き","키"],["く","쿠"],["け","케"],["こ","코"],
   ["さ","사"],["し","시"],["す","스"],["せ","세"],["そ","소"],
@@ -57,14 +64,18 @@ const chars = [
   ["ま","마"],["み","미"],["む","무"],["め","메"],["も","모"],
   ["や","야"],["ゆ","유"],["よ","요"],
   ["ら","라"],["り","리"],["る","루"],["れ","레"],["ろ","로"],
-  ["わ","와"],["を","오"],["ん","응"],
+  ["わ","와"],["を","오"],["ん","응"]
+];
 
+const daku = [
   ["が","가"],["ぎ","기"],["ぐ","구"],["げ","게"],["ご","고"],
   ["ざ","자"],["じ","지"],["ず","즈"],["ぜ","제"],["ぞ","조"],
   ["だ","다"],["ぢ","지"],["づ","즈"],["で","데"],["ど","도"],
   ["ば","바"],["び","비"],["ぶ","부"],["べ","베"],["ぼ","보"],
-  ["ぱ","파"],["ぴ","피"],["ぷ","푸"],["ぺ","페"],["ぽ","포"],
+  ["ぱ","파"],["ぴ","피"],["ぷ","푸"],["ぺ","페"],["ぽ","포"]
+];
 
+const yoon = [
   ["きゃ","캬"],["きゅ","큐"],["きょ","쿄"],
   ["しゃ","샤"],["しゅ","슈"],["しょ","쇼"],
   ["ちゃ","챠"],["ちゅ","츄"],["ちょ","쵸"],
@@ -78,43 +89,68 @@ const chars = [
   ["ぴゃ","퍄"],["ぴゅ","퓨"],["ぴょ","표"]
 ];
 
+const dakuYoon = [...daku, ...yoon];
+
 const jpEl = document.getElementById("jp");
 const krEl = document.getElementById("kr");
+const menuEl = document.getElementById("menu");
 
-function shuffle(arr){
-  return [...arr].sort(()=>Math.random()-0.5);
-}
+// ------------------ 유틸 ------------------
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
 
-function sleep(ms){
-  return new Promise(r=>setTimeout(r, ms));
-}
-
-async function start(){
+// ------------------ 연습 시작 ------------------
+async function start(chars, duration){
+  menuEl.innerHTML = "";
+  jpEl.textContent = "시작합니다!";
+  krEl.textContent = "";
+  await sleep(1000);
 
   const list = shuffle(chars);
 
-  jpEl.textContent = "시작합니다!";
-  krEl.textContent = "";
-  await sleep(2000);
-
   for(const [jp, kr] of list){
-
-    // 히라가나 2초
     jpEl.textContent = jp;
     krEl.textContent = "";
-    await sleep(2000);
+    await sleep(duration);
 
-    // 아래 한글 표시 1초 (위치 고정)
     krEl.textContent = kr;
     await sleep(1000);
   }
 
   jpEl.textContent = "수고하셨습니다!";
-  krEl.innerHTML = '<br><button onclick="start()">재시작</button>';
+  krEl.innerHTML = '<br><button onclick="showMenu()">재시작</button>';
 }
 
-// ⭐ 자동 시작
-start();
+// ------------------ 메뉴 보여주기 ------------------
+function showMenu(){
+  jpEl.textContent = "";
+  krEl.textContent = "";
+  menuEl.innerHTML = `
+    <div>무엇을 연습하시겠습니까?</div>
+    <button id="allBtn">전체 연습</button>
+    <button id="dakuBtn">탁음+반탁음+요음 연습</button>
+  `;
+
+  document.getElementById("allBtn").addEventListener("click", ()=>selectDuration([...normal, ...dakuYoon]));
+  document.getElementById("dakuBtn").addEventListener("click", ()=>selectDuration(dakuYoon));
+}
+
+// ------------------ 히라가나 표시 시간 선택 ------------------
+function selectDuration(chars){
+  menuEl.innerHTML = `
+    <div>히라가나만 표시되는 시간을 선택하세요</div>
+    <button id="sec1">1초</button>
+    <button id="sec2">2초</button>
+    <button id="sec3">3초</button>
+  `;
+
+  document.getElementById("sec1").addEventListener("click", ()=>start(chars, 1000));
+  document.getElementById("sec2").addEventListener("click", ()=>start(chars, 2000));
+  document.getElementById("sec3").addEventListener("click", ()=>start(chars, 3000));
+}
+
+// ------------------ 초기 실행 ------------------
+showMenu();
 </script>
 </body>
 </html>
